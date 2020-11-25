@@ -29,7 +29,8 @@ pub fn parse_statement(tokens: &mut Vec<String>) -> StatementASTNode {
 	if token != "return" {
 		panic!("Failed to parse return statement");
 	}
-	let expr = parse_expression(tokens.drain(0..1).collect::<String>());
+	let mut tokens = tokens;
+	let expr = parse_expression(tokens);
 	token = tokens.drain(0..1).collect::<String>();
 	if token != ";" {
 		panic!("Failed to parse statement semicolon");
@@ -37,12 +38,14 @@ pub fn parse_statement(tokens: &mut Vec<String>) -> StatementASTNode {
 	StatementASTNode::new(expr)
 }
 
-pub fn parse_expression(token: String) -> ExpressionASTNode {
+pub fn parse_expression(tokens: &mut Vec<String>) -> ExpressionASTNode {
+	let mut token = tokens.drain(0..1).collect::<String>();
 	match token.parse::<i64>() {
 		Ok(n) => return ExpressionASTNode::new_cst(n),
 		Err(_) => {
-			let op = get_operator(&token[0..1]);
-			return ExpressionASTNode::new_op(op, parse_expression(token[1..].to_string()));
+			let op = get_operator(&token);
+			let mut tokens = tokens;
+			return ExpressionASTNode::new_op(op, parse_expression(tokens));
 		},
 	}
 }
