@@ -28,10 +28,10 @@ pub fn parse_statement(tokens: &mut Vec<String>) -> super::ast::StatementASTNode
 		panic!("Failed to parse return statement");
 	}
 	token = tokens.drain(0..1).collect::<String>();
-	let mut i : i64;
+	let i : i64;
 	match token.parse::<i64>() {
 		Ok(n) => i = n,
-		Err(e) => panic!("Failed to parse return value"),
+		Err(_) => panic!("Failed to parse return value"),
 	}
 	token = tokens.drain(0..1).collect::<String>();
 	if token != ";" {
