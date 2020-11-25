@@ -29,7 +29,6 @@ pub fn parse_statement(tokens: &mut Vec<String>) -> StatementASTNode {
 	if token != "return" {
 		panic!("Failed to parse return statement");
 	}
-	let mut tokens = tokens;
 	let expr = parse_expression(tokens.drain(0..1).collect::<String>());
 	token = tokens.drain(0..1).collect::<String>();
 	if token != ";" {

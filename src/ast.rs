@@ -63,7 +63,7 @@ impl ExpressionASTNode {
 			ExpressionASTNode::Op(_, un_op) => {
 				let mut op = un_op;
 				loop {
-					match &**un_op {
+					match &**op {
 						ExpressionASTNode::Op(_, op2) => op = &op2,
 						ExpressionASTNode::Cst(c) => return *c,
 					}
