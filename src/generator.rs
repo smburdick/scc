@@ -8,6 +8,6 @@ fn generate_function(ast: super::ast::FnDeclASTNode) -> String {
 }
 
 fn generate_return(ast: super::ast::StatementASTNode) -> String {
-	let k = ast.ret.c;
+	let k = ast.ret.get_cst();
 	format!("\tmovl ${}, %eax\n\tret\n", k)
 }

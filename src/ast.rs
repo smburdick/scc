@@ -21,22 +21,57 @@ impl FnDeclASTNode {
 }
 
 pub struct StatementASTNode {
-	pub ret: ConstASTNode
+	pub ret: ExpressionASTNode
 }
 
 impl StatementASTNode {
-	pub fn new(ret: ConstASTNode) -> Self {
+	pub fn new(ret: ExpressionASTNode) -> Self {
 		StatementASTNode { ret: ret }
 	}
 }
 
-pub struct ConstASTNode {
-	pub c: i64
+pub enum UnaryOp {
+	Not,
+	Comp,
+	Neg,
 }
 
-impl ConstASTNode {
-	pub fn new(c: i64) -> Self {
-		ConstASTNode { c: c }
+impl UnaryOp {
+	fn to_string(&self) -> String {
+		match *self {
+			UnaryOp::Not => "!".to_string(),
+			UnaryOp::Comp => "~".to_string(),
+			UnaryOp::Neg => "-".to_string(),
+		}
+	}
+}
+
+pub enum ExpressionASTNode {
+	Op(UnaryOp, Box<ExpressionASTNode>),
+	Cst(i64)
+}
+
+impl ExpressionASTNode {
+	pub fn new_cst(c: i64) -> Self {
+		ExpressionASTNode::Cst(c)
+	}
+	pub fn new_op(op: UnaryOp, exp: ExpressionASTNode) -> Self {
+		ExpressionASTNode::Op(op, Box::new(exp))
+	}
+	pub fn get_cst(&self) -> i64 {
+		match &*self {
+			ExpressionASTNode::Op(_, un_op) => {
+				let mut op = un_op;
+				loop {
+					match &**un_op {
+						ExpressionASTNode::Op(_, op2) => op = &op2,
+						ExpressionASTNode::Cst(c) => return *c,
+					}
+				}
+
+			}
+			ExpressionASTNode::Cst(c) => *c,
+		}
 	}
 }
 

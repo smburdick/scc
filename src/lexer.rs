@@ -24,7 +24,7 @@ impl TokenCollection {
 pub fn lex(file_name: &str) -> TokenCollection {
 	let contents = fs::read_to_string(&file_name)
 		.expect("Could not read file");
-	let re = regex::Regex::new(r"(\{|\}|\(|\)|;|[a-zA-Z]\w*|[0-9]+)").unwrap();
+	let re = regex::Regex::new(r"(\{|\}|\(|\)|;|[a-zA-Z]\w*|[0-9]+|-|~|!)").unwrap();
 	let mut token_collection = TokenCollection::new();
 	for part in re.find_iter(&contents) {
 		let slice = &contents[part.start()..part.end()];
