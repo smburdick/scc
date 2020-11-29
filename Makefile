@@ -3,10 +3,9 @@ all: clean
 	touch out/a.s
 	cargo build
 
-run-compl: all
-	cargo run
+run-comp: all
+	cargo run c/return_comp_not_neg_1.c
 	cd out
-	ls -al
 	gcc out/a.s -o out/out
 	-out/out
 

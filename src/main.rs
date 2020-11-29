@@ -4,10 +4,18 @@ mod ast;
 mod generator;
 
 use std::fs;
+use std::env;
 
 fn main() {
-	//let tokens = lexer::lex(&"c/return_2.c");
-	let tokens = lexer::lex(&"c/return_comp_not_neg_1.c");
+	let args: Vec<String> = env::args().collect();
+	println!("{:?}", args);
+	if args.len() < 2 {
+		panic!("Usage: cargo run FILENAME");
+	}
+	let file_name = &args[1];
+	println!("file_name: {}", file_name);
+	let tokens = lexer::lex(file_name);
+	//let tokens = lexer::lex(&"c/return_.c");
 	println!("Printing tokens");
 	tokens.print_all();
 	let mut token_vec = tokens.tokens().to_vec();

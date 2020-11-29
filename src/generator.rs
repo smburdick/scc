@@ -14,14 +14,20 @@ fn generate_return(ast: StatementASTNode) -> String {
 }
 
 fn generate_expression(ast: ExpressionASTNode) -> String {
-	match ast {
-		ExpressionASTNode::Cst(c) => format!("\tmovl ${}, %eax\n", c), // insert constant into operation register
-		ExpressionASTNode::Op(unary_op, child_node) => {
-			match unary_op {
-				UnaryOp::Comp => format!("{}\tnot %eax\n", generate_expression(*child_node)),
-				UnaryOp::Neg => format!("{}\tneg %eax\n", generate_expression(*child_node)),
-				UnaryOp::Not => format!("{}\tcmpl $0, %eax\n\tmovl $0, %eax\n\tsete %al\n", generate_expression(*child_node)),
-			}
-		}
-	}
+	// match ast {
+	// 	ExpressionASTNode::Cst(c) => format!("\tmovl ${}, %eax\n", c), // insert constant into operation register
+	// 	ExpressionASTNode::Op(unary_op, child_node) => {
+	// 		match unary_op {
+	// 			UnaryOp::Comp => format!("{}\tnot %eax\n", generate_expression(*child_node)),
+	// 			UnaryOp::Neg => format!("{}\tneg %eax\n", generate_expression(*child_node)),
+	// 			UnaryOp::Not => format!("{}\tcmpl $0, %eax\n\tmovl $0, %eax\n\tsete %al\n", generate_expression(*child_node)),
+	// 		}
+	// 	},
+	// 	ExpressionASTNode::BinaryOp(_, _, _) => {
+	// 		// TODO
+	// 		panic!("Binary ops not yet supported");
+	// 	}
+	// }
+	// TODO fix this
+	panic!("Can't generate expression");
 }
