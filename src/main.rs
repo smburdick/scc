@@ -13,9 +13,8 @@ fn main() {
 	}
 	let file_name = &args[1];
 	let tokens = lexer::lex(file_name);
-	//let tokens = lexer::lex(&"c/return_.c");
-	// println!("Printing tokens");
-	// tokens.print_all();
+	println!("Printing tokens");
+	tokens.print_all();
 	let mut token_vec = tokens.tokens().to_vec();
 	let program: ast::ProgramASTNode = parser::parse_program(&mut token_vec);
 	println!("{}", program.pretty_print());

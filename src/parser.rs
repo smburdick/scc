@@ -40,6 +40,58 @@ pub fn parse_statement(tokens: &mut Vec<String>) -> StatementASTNode {
 
 pub fn parse_expression(tokens: &mut Vec<String>) -> ExpressionASTNode {
 	let mut tokens = tokens;
+	let exp = parse_logical_and_expression(tokens);
+	let next = &tokens[0];
+	if next == "||" {
+		let op = convert_bin_op(&next);
+		tokens.drain(0..1);
+		let next_term = parse_expression(tokens);
+		return ExpressionASTNode::BinOp(op, Box::new(exp), Box::new(next_term));
+	}
+	exp
+}
+
+pub fn parse_logical_and_expression(tokens: &mut Vec<String>) -> ExpressionASTNode {
+	let mut tokens = tokens;
+	let exp = parse_equality_expression(tokens);
+	let next = &tokens[0];
+	if next == "&&" {
+		let op = convert_bin_op(&next);
+		tokens.drain(0..1);
+		let next_term = parse_expression(tokens);
+		return ExpressionASTNode::BinOp(op, Box::new(exp), Box::new(next_term));
+	}
+	exp
+}
+
+pub fn parse_equality_expression(tokens: &mut Vec<String>) -> ExpressionASTNode {
+	let mut tokens = tokens;
+	let exp = parse_relational_expression(tokens);
+	let next = &tokens[0];
+	if next == "!=" || next == "==" {
+		let op = convert_bin_op(&next);
+		tokens.drain(0..1);
+		let next_term = parse_expression(tokens);
+		return ExpressionASTNode::BinOp(op, Box::new(exp), Box::new(next_term));
+	}
+	exp
+}
+
+pub fn parse_relational_expression(tokens: &mut Vec<String>) -> ExpressionASTNode {
+	let mut tokens = tokens;
+	let exp = parse_additive_expression(tokens);
+	let next = &tokens[0];
+	if next == "<" || next == ">" || next == "<=" || next == ">=" {
+		let op = convert_bin_op(&next);
+		tokens.drain(0..1);
+		let next_term = parse_expression(tokens);
+		return ExpressionASTNode::BinOp(op, Box::new(exp), Box::new(next_term));
+	}
+	exp
+}
+
+pub fn parse_additive_expression(tokens: &mut Vec<String>) -> ExpressionASTNode {
+	let mut tokens = tokens;
 	let term = parse_term(tokens);
 	let next = &tokens[0];
 	if next == "+" || next == "-" {
@@ -101,6 +153,14 @@ fn convert_bin_op(op: &str) -> BinaryOperator {
 		"-" => BinaryOperator::Minus,
 		"*" => BinaryOperator::Times,
 		"/" => BinaryOperator::Div,
+		">" => BinaryOperator::Gt,
+		"<" => BinaryOperator::Lt,
+		"==" => BinaryOperator::Equal,
+		"!=" => BinaryOperator::Neq,
+		"<=" => BinaryOperator::Leq,
+		">=" => BinaryOperator::Geq,
+		"&&" => BinaryOperator::And,
+		"||" => BinaryOperator::Or,
 		_ => panic!("Invalid op token")
 	}
 }

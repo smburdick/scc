@@ -16,10 +16,111 @@ fn generate_return(ast: StatementASTNode) -> String {
 fn generate_expression(ast: &ExpressionASTNode) -> String {
 	match ast {
 		ExpressionASTNode::BinOp(op, e1, e2) => {
+			let to_return = format!("{}\tpush %eax\n{}\tpop %ecx\n", generate_logical_and_expression(&*e1), generate_logical_and_expression(&*e2));
+			match op {
+				BinaryOperator::Or => {
+					// TODO
+					panic!("or not yet supported")
+				},
+				_ => {
+					generate_logical_and_expression(ast)
+				}
+			}
+		},
+		ExpressionASTNode::Wrapped(exp) => {
+			generate_expression(exp)
+		}
+		_ => {
+			generate_logical_and_expression(ast)
+		}		
+	}
+}
+
+fn generate_logical_and_expression(ast: &ExpressionASTNode) -> String {
+	match ast {
+		ExpressionASTNode::BinOp(op, e1, e2) => {
+			let to_return = format!("{}\tpush %eax\n{}\tpop %ecx\n", generate_equality_expression(&*e1), generate_equality_expression(&*e2));
+			match op {
+				BinaryOperator::And => {
+					// TODO
+					panic!("and not yet supported")
+				},
+				_ => {
+					generate_equality_expression(ast)
+				}
+			}
+		},
+		ExpressionASTNode::Wrapped(exp) => {
+			generate_expression(exp)
+		}
+		_ => {
+			generate_equality_expression(ast)
+		}		
+	}
+}
+
+fn generate_equality_expression(ast: &ExpressionASTNode) -> String {
+	match ast {
+		ExpressionASTNode::BinOp(op, e1, e2) => {
+			let to_return = format!("{}\tpush %eax\n{}\tpop %ecx\n\tcmpl %eax, %ecx\n\tmovl $0, %eax\n", generate_relational_expression(&*e1), generate_relational_expression(&*e2));
+			match op {
+				BinaryOperator::Equal => {
+					format!("{}\tsete %al\n", to_return)
+				},
+				BinaryOperator::Neq => {
+					format!("{}\tsetne %al\n", to_return)
+				},
+				_ => {
+					generate_relational_expression(ast)
+				}
+			}
+		},
+		ExpressionASTNode::Wrapped(exp) => {
+			generate_expression(exp)
+		}
+		_ => {
+			generate_relational_expression(ast)
+		}
+	}
+}
+
+fn generate_relational_expression(ast: &ExpressionASTNode) -> String {
+	match ast {
+		ExpressionASTNode::BinOp(op, e1, e2) => {
+			let to_return = format!("{}\tpush %eax\n{}\tpop %ecx\n\tcmpl %eax, %ecx\n\tmovl $0, %eax\n", generate_additive_expression(&*e1), generate_additive_expression(&*e2));
+			match op {
+				BinaryOperator::Lt => {
+					format!("{}\tsetl %al\n", to_return)
+				},
+				BinaryOperator::Gt => {
+					format!("{}\tsetg %al\n", to_return)
+				},
+				BinaryOperator::Leq => {
+					format!("{}\tsetle %al\n", to_return)
+				},
+				BinaryOperator::Geq => {
+					format!("{}\tsetge %al\n", to_return)
+				},
+				_ => {
+					generate_additive_expression(ast)
+				}
+			}
+		},
+		ExpressionASTNode::Wrapped(exp) => {
+			generate_expression(exp)
+		}
+		_ => {
+			generate_additive_expression(ast)
+		}
+	}
+}
+
+fn generate_additive_expression(ast: &ExpressionASTNode) -> String {
+	match ast {
+		ExpressionASTNode::BinOp(op, e1, e2) => {
 			let to_return = format!("{}\tpush %eax\n{}\tpop %ecx\n", generate_term(&*e1), generate_term(&*e2));
 			match op {
 				BinaryOperator::Plus => {
-					println!("Add");
 					format!("{}\taddl %ecx, %eax\n", to_return)
 				},
 				BinaryOperator::Minus => {
