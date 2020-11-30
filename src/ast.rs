@@ -90,8 +90,8 @@ impl Multiplicative {
 }
 
 pub struct ExpressionASTNode {
-	initial_term: Box<TermASTNode>,
-	extra_terms: Vec<(Additive, Box<TermASTNode>)>
+	pub initial_term: Box<TermASTNode>,
+	pub extra_terms: Vec<(Additive, Box<TermASTNode>)>
 }
 
 impl ExpressionASTNode {
@@ -108,8 +108,8 @@ impl ExpressionASTNode {
 }
 
 pub struct TermASTNode {
-	initial_factor: Box<FactorASTNode>,
-	extra_factors: Vec<(Multiplicative, Box<FactorASTNode>)>
+	pub initial_factor: Box<FactorASTNode>,
+	pub extra_factors: Vec<(Multiplicative, Box<FactorASTNode>)>
 }
 
 impl TermASTNode {
