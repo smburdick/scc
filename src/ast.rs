@@ -39,12 +39,6 @@ impl StatementASTNode {
 	}
 }
 
-pub enum Number {
-	Integer,
-	Float,
-	Double
-}
-
 pub enum UnaryOp {
 	Not,
 	Comp,
@@ -61,87 +55,61 @@ impl UnaryOp {
 	}
 }
 
-pub enum Additive {
+pub enum BinaryOperator {
 	Plus,
-	Minus
-}
-
-impl Additive {
-	pub fn to_string(&self) -> String {
-		match self {
-			Additive::Plus => "PLUS".to_string(),
-			Additive::Minus => "MINUS".to_string()
-		}
-	}
-}
-
-pub enum Multiplicative {
+	Minus,
 	Times,
-	Div
+	Div,
+	Gt,
+	Lt,
+	Geq,
+	Leq,
+	Equal,
+	Neq,
+	And,
+	Or,
 }
 
-impl Multiplicative {
+impl BinaryOperator {
 	pub fn to_string(&self) -> String {
 		match self {
-			Multiplicative::Times => "TIMES".to_string(),
-			Multiplicative::Div => "DIV".to_string()
+			BinaryOperator::Plus => "PLUS".to_string(),
+			BinaryOperator::Minus => "MINUS".to_string(),
+			BinaryOperator::Times => "TIMES".to_string(),
+			BinaryOperator::Div => "DIV".to_string(),
+			BinaryOperator::Lt => "LT".to_string(),
+			BinaryOperator::Gt => "GT".to_string(),
+			BinaryOperator::Leq => "LEQ".to_string(),
+			BinaryOperator::Geq => "GEQ".to_string(),
+			BinaryOperator::Neq => "NEQ".to_string(),
+			BinaryOperator::Equal => "EQ".to_string(),
+			BinaryOperator::And => "AND".to_string(),
+			BinaryOperator::Or => "OR".to_string()
 		}
 	}
 }
 
-pub struct ExpressionASTNode {
-	pub initial_term: Box<TermASTNode>,
-	pub extra_terms: Vec<(Additive, Box<TermASTNode>)>
+pub enum ExpressionASTNode {
+	BinOp(BinaryOperator, Box<ExpressionASTNode>, Box<ExpressionASTNode>),
+	UnOp(UnaryOp, Box<ExpressionASTNode>),
+	Cst(i64),
+	Wrapped(Box<ExpressionASTNode>)
 }
 
 impl ExpressionASTNode {
-	pub fn new(initial_term: Box<TermASTNode>, extra_terms: Vec<(Additive, Box<TermASTNode>)>) -> Self {
-		ExpressionASTNode { initial_term: initial_term, extra_terms: extra_terms }
-	}
-	pub fn pretty_print(&self) -> String {
-		let mut to_return = (*self.initial_term).pretty_print();
-		self.extra_terms.iter().for_each(|term|
-			to_return = format!("{} {} {}", to_return, term.0.to_string(), (*term.1).pretty_print())
-		);
-		to_return
-	}
-}
-
-pub struct TermASTNode {
-	pub initial_factor: Box<FactorASTNode>,
-	pub extra_factors: Vec<(Multiplicative, Box<FactorASTNode>)>
-}
-
-impl TermASTNode {
-	pub fn new(initial_factor: Box<FactorASTNode>, extra_factors: Vec<(Multiplicative, Box<FactorASTNode>)>) -> Self {
-		TermASTNode { initial_factor: initial_factor, extra_factors: extra_factors }
-	}
-	pub fn pretty_print(&self) -> String {
-		let mut to_return = (*self.initial_factor).pretty_print();
-		self.extra_factors.iter().for_each(|factor|
-			to_return = format!("{} {} {}", to_return, factor.0.to_string(), (*factor.1).pretty_print())
-		);
-		to_return
-	}
-}
-
-pub enum FactorASTNode { // listed in order of precedence
-	WrappedExp(Box<ExpressionASTNode>),
-	SingleOp(UnaryOp, Box<FactorASTNode>),
-	Int(i64)
-}
-
-impl FactorASTNode {
 	pub fn pretty_print(&self) -> String {
 		match self {
-			FactorASTNode::WrappedExp(exp) => {
+			ExpressionASTNode::BinOp(op, e1, e2) => {
+				format!("{} {} {}", (*e1).pretty_print(), op.to_string(), (*e2).pretty_print())
+			},
+			ExpressionASTNode::UnOp(op, e) => {
+				format!("{} {}", op.to_string(), (*e).pretty_print())
+			},
+			ExpressionASTNode::Cst(c) => {
+				format!("Int<{}>", c)
+			},
+			ExpressionASTNode::Wrapped(exp) => {
 				format!("({})", (*exp).pretty_print())
-			},
-			FactorASTNode::SingleOp(op, exp) => {
-				format!("{} {}", op.to_string(), (*exp).pretty_print())
-			},
-			FactorASTNode::Int(i) => {
-				format!("Int<{}>", i)
 			}
 		}
 	}
