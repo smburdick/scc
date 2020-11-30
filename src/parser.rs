@@ -2,7 +2,7 @@ use crate::ast::*;
 
 pub fn parse_program(tokens: &mut Vec<String>) -> ProgramASTNode {
 	let mut tokens = tokens;
-	super::ast::ProgramASTNode::new(parse_fn_decl(&mut tokens))
+	ProgramASTNode::new(parse_fn_decl(&mut tokens))
 }
 
 pub fn parse_fn_decl(tokens: &mut Vec<String>) -> FnDeclASTNode {
@@ -43,8 +43,9 @@ pub fn parse_expression(tokens: &mut Vec<String>) -> ExpressionASTNode {
 	let term = parse_term(tokens);
 	let mut next = &tokens[0];
 	let mut terms = Vec::new();
-	while (next == "+" || next == "-") {
+	while next == "+" || next == "-" {
 		let op = convert_to_additive(&next);
+		tokens.drain(0..1);
 		let next_term = parse_term(tokens);
 		terms.push((op, Box::new(next_term)));
 		next = &tokens[0];
@@ -57,8 +58,9 @@ fn parse_term(tokens: &mut Vec<String>) -> TermASTNode {
 	let factor = parse_factor(tokens);
 	let mut next = &tokens[0];
 	let mut factors = Vec::new();
-	while (next == "*" || next == "/") {
+	while next == "*" || next == "/" {
 		let op = convert_to_multiplicative(&next);
+		tokens.drain(0..1);
 		let next_factor = parse_factor(tokens);
 		factors.push((op, Box::new(next_factor)));
 		next = &tokens[0];
