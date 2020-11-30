@@ -38,7 +38,7 @@ fn generate_term(ast: &TermASTNode) -> String {
 				to_return = format!("{}\timul %ecx, %eax\n", to_return);
 			},
 			Multiplicative::Div => {
-				panic!("Div not yet supported");
+				to_return = format!("{}\tmovl %eax, %ebx\n\tmovl %ecx, %eax\n\tcdq\n\tidivl %ebx\n", to_return);
 			}
 		}	
 	});
