@@ -1,4 +1,7 @@
 use crate::ast::*;
+use std::collections::hash_map::DefaultHasher;
+use std::hash::{Hash, Hasher};
+use std::time::SystemTime;
 
 pub fn generate_program(ast: ProgramASTNode) -> String {
 	generate_function(ast.fn_decl)
@@ -16,11 +19,12 @@ fn generate_return(ast: StatementASTNode) -> String {
 fn generate_expression(ast: &ExpressionASTNode) -> String {
 	match ast {
 		ExpressionASTNode::BinOp(op, e1, e2) => {
-			let to_return = format!("{}\tpush %eax\n{}\tpop %ecx\n", generate_logical_and_expression(&*e1), generate_logical_and_expression(&*e2));
 			match op {
 				BinaryOperator::Or => {
-					// TODO
-					panic!("or not yet supported")
+					let label = generate_label();
+					format!("{}\tcmpl $0, %eax\n\tje _clause_{}\n\tmovl $1, %eax\n\tjmp _end_{}\n_clause_{}:\n{}\tcmpl $0, %eax\n\tmovl $0, %eax\n\tsetne %al\n_end_{}:\n",
+						generate_logical_and_expression(&*e1), label, label, label, generate_logical_and_expression(&*e2), label)
+				
 				},
 				_ => {
 					generate_logical_and_expression(ast)
@@ -39,11 +43,11 @@ fn generate_expression(ast: &ExpressionASTNode) -> String {
 fn generate_logical_and_expression(ast: &ExpressionASTNode) -> String {
 	match ast {
 		ExpressionASTNode::BinOp(op, e1, e2) => {
-			let to_return = format!("{}\tpush %eax\n{}\tpop %ecx\n", generate_equality_expression(&*e1), generate_equality_expression(&*e2));
 			match op {
 				BinaryOperator::And => {
-					// TODO
-					panic!("and not yet supported")
+					let label = generate_label();
+					format!("{}\tcmpl $0, %eax\n\tjne _clause_{}\n\tjmp _end_{}\n_clause_{}:\n{}\tcmpl $0, %eax\n\tmovl $0, %eax\n\tsetne %al\n_end_{}:\n",
+						generate_equality_expression(&*e1), label, label, label, generate_equality_expression(&*e2), label)
 				},
 				_ => {
 					generate_equality_expression(ast)
@@ -57,6 +61,13 @@ fn generate_logical_and_expression(ast: &ExpressionASTNode) -> String {
 			generate_equality_expression(ast)
 		}		
 	}
+}
+
+fn generate_label() -> u64 {
+	let mut hasher = DefaultHasher::new();
+	let now = SystemTime::now();
+	now.hash(&mut hasher);
+	hasher.finish()
 }
 
 fn generate_equality_expression(ast: &ExpressionASTNode) -> String {
