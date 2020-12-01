@@ -17,28 +17,52 @@ pub fn parse_fn_decl(tokens: &mut Vec<String>) -> FnDeclASTNode {
 		panic!("Failed to parse function declaration");
 	}
 	let mut tokens = tokens;
-	let statement = parse_statement(&mut tokens);
+	let statements = parse_statements(&mut tokens);
 	if tokens.drain(0..1).collect::<String>() != "}" {
 		panic!("Failed to parse function declaration");
 	}
-	FnDeclASTNode::new(string, statement)
+	FnDeclASTNode::new(string, statements)
 }
 
-pub fn parse_statement(tokens: &mut Vec<String>) -> StatementASTNode {
-	let mut token = tokens.drain(0..1).collect::<String>();
-	if token != "return" {
-		panic!("Failed to parse return statement");
+pub fn parse_statements(tokens: &mut Vec<String>) -> Vec<StatementASTNode> {
+	let to_return = Vec::<StatementASTNode>::new();
+	while tokens.len() != 0 && tokens[0] != "}" {
+		if tokens[0] == "return" {
+			tokens.drain(0..1).collect::<String>();
+			let exp = parse_expression(tokens);
+			to_return.push(StatementASTNode::Return(exp));
+		} else if tokens[0] == "int" {
+			let var_name = tokens.drain(0..1).collect::<String>();
+			match tokens.drain(0..1).collect::<String>().as_str() {
+				";" => to_return.push(StatementASTNode::Declare(var_name, None)),
+				"=" => {
+					let exp = parse_expression(tokens);
+					to_return.push(StatementASTNode::Declare(var_name, Some(exp)));
+				},
+				_ => {
+					panic!("Invalid assignment");
+				}
+			}
+		} else {
+			to_return.push(StatementASTNode::Expression(parse_expression(tokens)));
+			if tokens.drain(0..1).collect::<String>() != ";" {
+				panic!("invalid assignment");
+			}
+		}
 	}
-	let mut tokens = tokens;
-	let expr = parse_expression(tokens);
-	token = tokens.drain(0..1).collect::<String>();
-	if token != ";" {
-		panic!("Failed to parse statement semicolon");
-	}
-	StatementASTNode::new(expr)
+	to_return
 }
 
 pub fn parse_expression(tokens: &mut Vec<String>) -> ExpressionASTNode {
+	let mut token = tokens.drain(0..1).collect::<String>();
+	if tokens[0] == "=" {
+		tokens.drain(0..1).collect::<String>();
+		return ExpressionASTNode::Assign(token, Box::new(parse_expression(&mut tokens)));
+	}
+	parse__or_expression(&mut tokens)
+}
+
+pub fn parse__or_expression(tokens: &mut Vec<String>) -> ExpressionASTNode {
 	let mut tokens = tokens;
 	let exp = parse_logical_and_expression(tokens);
 	let next = &tokens[0];
@@ -129,6 +153,9 @@ fn parse_factor(tokens: &mut Vec<String>) -> ExpressionASTNode {
 		let op = convert_to_op(&next);
 		let exp = parse_expression(tokens);
 		ExpressionASTNode::UnOp(op, Box::new(exp))
+	} else if next == "int" {
+		let var = tokens.drain(0..1).collect::<String>();
+		ExpressionASTNode::Var(var)
 	} else { // int
 		ExpressionASTNode::Cst(next.parse::<i64>().unwrap())
 	}
