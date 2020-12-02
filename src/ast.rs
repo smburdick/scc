@@ -43,10 +43,10 @@ impl StatementASTNode {
 				format!("\tRETURN {}", exp.pretty_print())
 			},
 			StatementASTNode::Declare(var, Some(exp)) => {
-				format!("\tINT {} = {}", var, exp.pretty_print())
+				format!("\tDECL INT {} GETS {}", var, exp.pretty_print())
 			},
 			StatementASTNode::Declare(var, None) => {
-				format!("\tINT {}", var)
+				format!("\tDECL INT {}", var)
 			},
 			StatementASTNode::Expression(exp) => {
 				format!("\t{}", exp.pretty_print())
@@ -128,6 +128,12 @@ impl ExpressionASTNode {
 			},
 			ExpressionASTNode::Wrapped(exp) => {
 				format!("({})", (*exp).pretty_print())
+			},
+			ExpressionASTNode::Assign(var, exp) => {
+				format!("{} GETS {}", var.to_string(), (*exp).pretty_print())
+			},
+			ExpressionASTNode::Var(var) => {
+				format!("{}", var.to_string())
 			}
 		}
 	}

@@ -25,44 +25,49 @@ pub fn parse_fn_decl(tokens: &mut Vec<String>) -> FnDeclASTNode {
 }
 
 pub fn parse_statements(tokens: &mut Vec<String>) -> Vec<StatementASTNode> {
-	let to_return = Vec::<StatementASTNode>::new();
+	let mut to_return = Vec::<StatementASTNode>::new();
 	while tokens.len() != 0 && tokens[0] != "}" {
 		if tokens[0] == "return" {
 			tokens.drain(0..1).collect::<String>();
 			let exp = parse_expression(tokens);
 			to_return.push(StatementASTNode::Return(exp));
 		} else if tokens[0] == "int" {
+			tokens.drain(0..1).collect::<String>();
 			let var_name = tokens.drain(0..1).collect::<String>();
 			match tokens.drain(0..1).collect::<String>().as_str() {
-				";" => to_return.push(StatementASTNode::Declare(var_name, None)),
+				";" => {
+					to_return.push(StatementASTNode::Declare(var_name, None));
+					continue;
+				}
 				"=" => {
 					let exp = parse_expression(tokens);
-					to_return.push(StatementASTNode::Declare(var_name, Some(exp)));
+					to_return.push(StatementASTNode::Declare(var_name, Some(exp)));	
 				},
 				_ => {
-					panic!("Invalid assignment");
+					panic!("Invalid assignment asdf");
 				}
 			}
 		} else {
 			to_return.push(StatementASTNode::Expression(parse_expression(tokens)));
-			if tokens.drain(0..1).collect::<String>() != ";" {
-				panic!("invalid assignment");
-			}
+		}
+		if tokens.drain(0..1).collect::<String>() != ";" {
+			panic!("Missing semicolor");
 		}
 	}
 	to_return
 }
 
 pub fn parse_expression(tokens: &mut Vec<String>) -> ExpressionASTNode {
-	let mut token = tokens.drain(0..1).collect::<String>();
-	if tokens[0] == "=" {
+	let mut tokens = tokens;
+	if tokens.len() > 1 && tokens[1] == "=" {
+		let token = tokens.drain(0..1).collect::<String>();
 		tokens.drain(0..1).collect::<String>();
-		return ExpressionASTNode::Assign(token, Box::new(parse_expression(&mut tokens)));
+		return ExpressionASTNode::Assign(token, Box::new(parse_expression(tokens)));
 	}
-	parse__or_expression(&mut tokens)
+	parse_logical_or_expression(tokens)
 }
 
-pub fn parse__or_expression(tokens: &mut Vec<String>) -> ExpressionASTNode {
+pub fn parse_logical_or_expression(tokens: &mut Vec<String>) -> ExpressionASTNode {
 	let mut tokens = tokens;
 	let exp = parse_logical_and_expression(tokens);
 	let next = &tokens[0];
@@ -156,8 +161,13 @@ fn parse_factor(tokens: &mut Vec<String>) -> ExpressionASTNode {
 	} else if next == "int" {
 		let var = tokens.drain(0..1).collect::<String>();
 		ExpressionASTNode::Var(var)
-	} else { // int
-		ExpressionASTNode::Cst(next.parse::<i64>().unwrap())
+	} else { // variable, or int
+
+		let a = next.parse::<i64>();
+		match a {
+			Ok(k) => ExpressionASTNode::Cst(k),
+			Err(_) => ExpressionASTNode::Var(next)
+		}
 	}
 }
 
