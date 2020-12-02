@@ -14,28 +14,44 @@ impl ProgramASTNode {
 
 pub struct FnDeclASTNode {
 	pub string: String,
-	pub statement: StatementASTNode
+	pub statements: Vec<StatementASTNode>
 }
 
 impl FnDeclASTNode {
-	pub fn new(string : String, statement: StatementASTNode) -> Self {
-		FnDeclASTNode { string : string, statement : statement }
+	pub fn new(string : String, statements: Vec<StatementASTNode>) -> Self {
+		FnDeclASTNode { string : string, statements : statements }
 	}
 	pub fn pretty_print(&self) -> String {
-		format!("FUN INT {}:\n\tparams: ()\n\tbody:\n\t\t{}", self.string, self.statement.pretty_print())
+		let mut statement_lines = String::new();
+		self.statements.iter().for_each(|stmt| {
+			statement_lines = format!("{}\n\t\t{}", statement_lines, stmt.pretty_print());
+		});
+		format!("FUN INT {}:\n\tparams: ()\n\tbody:{}\n", self.string, statement_lines)
 	}
 }
 
-pub struct StatementASTNode {
-	pub ret: ExpressionASTNode
+pub enum StatementASTNode {
+	Return(ExpressionASTNode),
+	Declare(String, Option<ExpressionASTNode>), // string is variable name
+	Expression(ExpressionASTNode)
 }
 
 impl StatementASTNode {
-	pub fn new(ret: ExpressionASTNode) -> Self {
-		StatementASTNode { ret: ret }
-	}
 	pub fn pretty_print(&self) -> String {
-		format!("RETURN {}", self.ret.pretty_print())
+		match self {
+			StatementASTNode::Return(exp) => {
+				format!("\tRETURN {}", exp.pretty_print())
+			},
+			StatementASTNode::Declare(var, Some(exp)) => {
+				format!("\tDECL INT {} GETS {}", var, exp.pretty_print())
+			},
+			StatementASTNode::Declare(var, None) => {
+				format!("\tDECL INT {}", var)
+			},
+			StatementASTNode::Expression(exp) => {
+				format!("\t{}", exp.pretty_print())
+			}
+		}
 	}
 }
 
@@ -90,6 +106,8 @@ impl BinaryOperator {
 }
 
 pub enum ExpressionASTNode {
+	Assign(String, Box<ExpressionASTNode>),
+	Var(String),
 	BinOp(BinaryOperator, Box<ExpressionASTNode>, Box<ExpressionASTNode>),
 	UnOp(UnaryOp, Box<ExpressionASTNode>),
 	Cst(i64),
@@ -110,6 +128,12 @@ impl ExpressionASTNode {
 			},
 			ExpressionASTNode::Wrapped(exp) => {
 				format!("({})", (*exp).pretty_print())
+			},
+			ExpressionASTNode::Assign(var, exp) => {
+				format!("{} GETS {}", var.to_string(), (*exp).pretty_print())
+			},
+			ExpressionASTNode::Var(var) => {
+				format!("{}", var.to_string())
 			}
 		}
 	}
